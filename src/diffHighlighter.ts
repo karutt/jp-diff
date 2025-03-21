@@ -1,7 +1,8 @@
 // src/diffHighlighter.ts
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import { Decoration, EditorView } from "@codemirror/view";
-import { diffWords } from "diff";
+import { diffWordsWithSpace } from "diff";
+
 import type { Editor } from "obsidian";
 import { diffDecorationsField, setDiffDecorations } from "./diffDecorations";
 
@@ -16,7 +17,7 @@ export function highlightDiff(
 	newText: string,
 	accentVar: string = "var(--color-blue)"
 ): void {
-	const diff = diffWords(originalText, newText);
+	const diff = diffWordsWithSpace(originalText, newText);
 	let origPos = 0;
 	let compPos = 0;
 	const origBuilder = new RangeSetBuilder<Decoration>();
