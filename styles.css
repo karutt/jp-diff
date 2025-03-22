@@ -1,8 +1,13 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+/* 疑似要素を用いてオーバーレイを表示 */
+.file-selection-hover::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 255, 0.2); /* 半透明の青 */
+	pointer-events: none; /* オーバーレイ自体がイベントを受けないように */
+	z-index: 10; /* 内部の他の要素より上に表示する */
+	border-radius: 10px;
+}
