@@ -17,13 +17,20 @@ export default class DiffHighlighterPlugin extends Plugin {
 		// コマンド登録（従来のファイル比較用）
 		this.addCommand({
 			id: "compare-with-file",
-			name: "Compare with file",
+			name: "ファイル比較（検索から選択）",
 			callback: () => this.compareFiles(),
+		});
+
+		// 新規コマンド：コマンドパレットからファイル選択モードを起動
+		this.addCommand({
+			id: "select-comparison-file",
+			name: "ファイル比較（UI上で選択）",
+			callback: () => this.selectComparisonFile(),
 		});
 
 		this.addCommand({
 			id: "update-diff",
-			name: "Update Diff",
+			name: "差分を更新",
 			callback: () => this.updateDiff(),
 		});
 
@@ -39,14 +46,13 @@ export default class DiffHighlighterPlugin extends Plugin {
 							const selector = new FileSelector(
 								this.app,
 								(selectedFile: TFile) => {
-									// 無効なLeafの場合は処理を中止
+									// 無効なLeafや自分自身の場合は処理を中止
 									if (!selectedFile || !selectedFile.path) {
 										new Notice(
 											"無効なLeafが選択されました。"
 										);
 										return;
 									}
-									// 選択したファイルが自分自身の場合は処理を中止
 									if (
 										this.lastActiveFile &&
 										selectedFile.path ===
@@ -69,6 +75,36 @@ export default class DiffHighlighterPlugin extends Plugin {
 				});
 			})
 		);
+	}
+
+	/**
+	 * コマンドパレットから実行する、ファイル選択モードを起動する処理。
+	 * アクティブなファイルを比較元として設定し、FileSelector で比較先を選択します。
+	 */
+	private selectComparisonFile(): void {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice("No active file.");
+			return;
+		}
+		this.lastActiveFile = activeFile;
+		const selector = new FileSelector(this.app, (selectedFile: TFile) => {
+			// 無効なLeafや自分自身の場合は処理を中止
+			if (!selectedFile || !selectedFile.path) {
+				new Notice("無効なLeafが選択されました。");
+				return;
+			}
+			if (
+				this.lastActiveFile &&
+				selectedFile.path === this.lastActiveFile.path
+			) {
+				new Notice("自分自身は選択できません。");
+				return;
+			}
+			this.lastSelectedFile = selectedFile;
+			this.diffExecutor.executeDiff(this.lastActiveFile!, selectedFile);
+		});
+		selector.startSelectionMode();
 	}
 
 	/**
